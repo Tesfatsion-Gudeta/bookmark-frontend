@@ -1,31 +1,52 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
-const Home = () => {
+
+export default function Home() {
+  const handleSignUp = () => {
+    // Handle signup logic
+    console.log("Sign up clicked");
+  };
+
+  const handleLogin = () => {
+    // Handle login logic
+    console.log("Login clicked");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center  ">
-      <div className="flex flex-col items-center justify-center gap-3">
-        <h2 className="font-bold text-4xl ">
-          Never Lose a Link Again , Everything You Save All in One Place.
-        </h2>
-        <div>
-          <p className="px-72">
-            Save, organize, and access your favorite websites effortlessly.
-            Whether you're researching, planning, or just browsing, BookmarkFlow
-            keeps everything just a click away.
-          </p>
+    <section className="relative w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gray-50">
+      <div className="absolute inset-0 opacity-50">
+        <div className="h-full w-full bg-[linear-gradient(to_right,#80808025_1px,transparent_1px),linear-gradient(to_bottom,#80808025_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      </div>
+      <div className="container px-4 md:px-6 relative z-10 mx-auto">
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="space-y-2">
+            <div className="inline-block rounded-lg bg-gray-200 px-3 py-1 text-sm">
+              Save & Organize
+            </div>
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-gray-900">
+              Never Lose a Bookmark Again
+            </h1>
+            <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl">
+              Save, organize, and access your favorite websites from anywhere.
+              Keep your bookmarks synced across all your devices with our simple
+              and powerful bookmark manager.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 min-[400px]:flex-row">
+            <Link to="/signup">
+              <button className="inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900 disabled:pointer-events-none disabled:opacity-50">
+                Sign Up Free
+              </button>
+            </Link>
+
+            <Link to="/login">
+              <button className="inline-flex h-10 items-center justify-center rounded-md border border-gray-300 bg-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900 disabled:pointer-events-none disabled:opacity-50">
+                Log In
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
-
-      <div className="flex justify-center items-center gap-3 mt-3">
-        <Link to="/login">
-          <Button className="px-6 py-3 text-base rounded-none">Login</Button>
-        </Link>
-        <Link to="/signup">
-          <Button>signup</Button>
-        </Link>
-      </div>
-    </div>
+    </section>
   );
-};
-
-export default Home;
+}
