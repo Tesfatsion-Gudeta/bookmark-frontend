@@ -13,7 +13,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getProfile, login } from "../api/authApi";
+import { useAuth } from "../context/authContext";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -25,13 +27,14 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
-      // rememberMe: false,
     },
   });
 
@@ -39,12 +42,14 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Login successful:", data);
+      const { access_token } = await login(data);
+      localStorage.setItem("token", access_token); // Store token
+
+      const profileRes = await getProfile();
+      setUser(profileRes.data); // Update context
+      navigate("/bookmarks"); // Redirect after login
       alert("Login successful!");
     } catch (error) {
-      console.error("Login failed:", error);
       alert("Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
@@ -53,14 +58,6 @@ export default function Login() {
 
   const handleBackToHome = () => {
     console.log("Navigate back to home");
-  };
-
-  const handleSignupRedirect = () => {
-    console.log("Navigate to signup");
-  };
-
-  const handleForgotPassword = () => {
-    console.log("Navigate to forgot password");
   };
 
   return (
@@ -118,36 +115,6 @@ export default function Login() {
                   </FormItem>
                 )}
               />
-
-              <div className="flex items-center justify-between">
-                {/* <FormField
-                  control={form.control}
-                  name="rememberMe"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-normal">
-                          Remember me
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                /> */}
-
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-gray-600 hover:text-gray-500 underline"
-                >
-                  Forgot password?
-                </button>
-              </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
