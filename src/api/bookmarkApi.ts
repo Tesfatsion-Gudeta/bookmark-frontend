@@ -3,6 +3,12 @@ import axiosInstance from "@/utils/axiosInstance";
 
 const API_URL = "/bookmarks";
 
+export type CreateBookmarkPayload = {
+  title: string;
+  link: string;
+  description?: string;
+};
+
 // Get all bookmarks
 export const getBookmarks = async () => {
   try {
@@ -19,11 +25,7 @@ export const addBookmark = async ({
   title,
   link,
   description,
-}: {
-  title: string;
-  link: string;
-  description: string;
-}) => {
+}: CreateBookmarkPayload) => {
   try {
     const { data } = await axiosInstance.post<Bookmark[]>(API_URL, {
       title,

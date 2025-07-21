@@ -48,6 +48,8 @@ import {
   LogOut,
   Bell,
 } from "lucide-react";
+import { useAddBookmark, useBookmarks } from "../hooks/useBookmarks";
+// import type { Bookmark } from "../types/bookmark";
 
 const bookmarkSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -69,84 +71,15 @@ interface UserType {
   avatar?: string;
 }
 
-// Mock API functions
-const api = {
-  async getBookmarks(): Promise<Bookmark[]> {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Return mock data
-    return [
-      {
-        id: "1",
-        title: "React Documentation",
-        url: "https://react.dev",
-        description:
-          "The official React documentation with guides and API reference",
-        createdAt: new Date("2024-01-15"),
-      },
-      {
-        id: "2",
-        title: "Tailwind CSS",
-        url: "https://tailwindcss.com",
-        description:
-          "A utility-first CSS framework for rapidly building custom designs",
-        createdAt: new Date("2024-01-10"),
-      },
-      {
-        id: "3",
-        title: "TypeScript Handbook",
-        url: "https://www.typescriptlang.org/docs/",
-        description: "Learn TypeScript from the ground up",
-        createdAt: new Date("2024-01-05"),
-      },
-    ];
-  },
-
-  async createBookmark(data: BookmarkFormData): Promise<Bookmark> {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    return {
-      ...data,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-    };
-  },
-
-  async updateBookmark(id: string, data: BookmarkFormData): Promise<Bookmark> {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    return {
-      ...data,
-      id,
-      createdAt: new Date(), // In real API, this would be the original date
-    };
-  },
-
-  async deleteBookmark(id: string): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-  },
-
-  async getCurrentUser(): Promise<UserType> {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    return {
-      id: "user-1",
-      name: "John Doe",
-      email: "john@example.com",
-      avatar: "/placeholder.svg?height=32&width=32",
-    };
-  },
-};
-
 export default function BookmarkPage() {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [user, setUser] = useState<UserType | null>(null);
+  // const [user, setUser] = useState<UserType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  const { data: bookmarks, isLoading: isBookmarksLoading } = useBookmarks();
+  const { mutate: addBookmarkMutation } = useAddBookmark();
 
   const form = useForm<BookmarkFormData>({
     resolver: zodResolver(bookmarkSchema),
@@ -157,31 +90,11 @@ export default function BookmarkPage() {
     },
   });
 
-  // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [bookmarksData, userData] = await Promise.all([
-          api.getBookmarks(),
-          api.getCurrentUser(),
-        ]);
-        setBookmarks(bookmarksData);
-        setUser(userData);
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      } finally {
-        setIsPageLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  const filteredBookmarks = bookmarks.filter(
+  const filteredBookmarks = (bookmarks ?? []).filter(
     (bookmark) =>
       bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bookmark.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bookmark.url.toLowerCase().includes(searchTerm.toLowerCase())
+      bookmark.link.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const onSubmit = async (data: BookmarkFormData) => {
@@ -190,20 +103,15 @@ export default function BookmarkPage() {
     try {
       if (editingBookmark) {
         // Update existing bookmark
-        const updatedBookmark = await api.updateBookmark(
-          editingBookmark.id,
-          data
-        );
-        setBookmarks((prev) =>
-          prev.map((bookmark) =>
-            bookmark.id === editingBookmark.id ? updatedBookmark : bookmark
-          )
-        );
-        setEditingBookmark(null);
       } else {
         // Add new bookmark
-        const newBookmark = await api.createBookmark(data);
-        setBookmarks((prev) => [newBookmark, ...prev]);
+
+        await addBookmarkMutation({
+          title: data.title,
+          link: data.url,
+          description: data.description,
+        });
+
         setIsAddDialogOpen(false);
       }
 
@@ -216,72 +124,72 @@ export default function BookmarkPage() {
     }
   };
 
-  const handleEdit = (bookmark: Bookmark) => {
-    setEditingBookmark(bookmark);
-    form.reset({
-      title: bookmark.title,
-      url: bookmark.url,
-      description: bookmark.description || "",
-    });
-  };
+  // const handleEdit = (bookmark: Bookmark) => {
+  //   setEditingBookmark(bookmark);
+  //   form.reset({
+  //     title: bookmark.title,
+  //     url: bookmark.url,
+  //     description: bookmark.description || "",
+  //   });
+  // };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this bookmark?")) {
-      try {
-        await api.deleteBookmark(id);
-        setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== id));
-      } catch (error) {
-        console.error("Error deleting bookmark:", error);
-        alert("Failed to delete bookmark. Please try again.");
-      }
-    }
-  };
+  // const handleDelete = async (id: string) => {
+  //   if (confirm("Are you sure you want to delete this bookmark?")) {
+  //     try {
+  //       await api.deleteBookmark(id);
+  //       setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== id));
+  //     } catch (error) {
+  //       console.error("Error deleting bookmark:", error);
+  //       alert("Failed to delete bookmark. Please try again.");
+  //     }
+  //   }
+  // };
 
-  const handleCancelEdit = () => {
-    setEditingBookmark(null);
-    form.reset();
-  };
+  // const handleCancelEdit = () => {
+  //   setEditingBookmark(null);
+  //   form.reset();
+  // };
 
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    // Implement logout logic
-  };
+  // const handleLogout = () => {
+  //   console.log("Logout clicked");
+  //   // Implement logout logic
+  // };
 
-  const handleSettings = () => {
-    console.log("Settings clicked");
-    // Navigate to settings page
-  };
+  // const handleSettings = () => {
+  //   console.log("Settings clicked");
+  //   // Navigate to settings page
+  // };
 
-  const handleProfile = () => {
-    console.log("Profile clicked");
-    // Navigate to profile page
-  };
+  // const handleProfile = () => {
+  //   console.log("Profile clicked");
+  //   // Navigate to profile page
+  // };
 
-  const getDomainFromUrl = (url: string) => {
-    try {
-      return new URL(url).hostname;
-    } catch {
-      return url;
-    }
-  };
+  // const getDomainFromUrl = (url: string) => {
+  //   try {
+  //     return new URL(url).hostname;
+  //   } catch {
+  //     return url;
+  //   }
+  // };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(date);
-  };
+  // const formatDate = (date: Date) => {
+  //   return new Intl.DateTimeFormat("en-US", {
+  //     month: "short",
+  //     day: "numeric",
+  //     year: "numeric",
+  //   }).format(date);
+  // };
 
-  const getUserInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
+  // const getUserInitials = (name: string) => {
+  //   return name
+  //     .split(" ")
+  //     .map((n) => n[0])
+  //     .join("")
+  //     .toUpperCase();
+  // };
 
-  if (isPageLoading) {
+  if (isBookmarksLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -311,7 +219,7 @@ export default function BookmarkPage() {
             </p>
           </div>
 
-          {user && (
+          {/* {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -360,7 +268,7 @@ export default function BookmarkPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          )} */}
         </div>
 
         {/* Search and Add Section */}
@@ -482,7 +390,7 @@ export default function BookmarkPage() {
             <CardContent>
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -551,7 +459,7 @@ export default function BookmarkPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={handleCancelEdit}
+                      // onClick={handleCancelEdit}
                     >
                       Cancel
                     </Button>
@@ -577,7 +485,7 @@ export default function BookmarkPage() {
                     </CardTitle>
                     <CardDescription className="flex items-center gap-1 mt-1">
                       <span className="truncate">
-                        {getDomainFromUrl(bookmark.url)}
+                        {/* {getDomainFromUrl(bookmark.url)} */}
                       </span>
                       <ExternalLink className="h-3 w-3 flex-shrink-0" />
                     </CardDescription>
@@ -586,7 +494,7 @@ export default function BookmarkPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleEdit(bookmark)}
+                      // onClick={() => handleEdit(bookmark)}
                       className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
@@ -594,7 +502,7 @@ export default function BookmarkPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(bookmark.id)}
+                      // onClick={() => handleDelete(bookmark.id)}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -610,12 +518,12 @@ export default function BookmarkPage() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">
-                    {formatDate(bookmark.createdAt)}
+                    {/* {formatDate(bookmark.createdAt)} */}
                   </span>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(bookmark.url, "_blank")}
+                    onClick={() => window.open(bookmark.link, "_blank")}
                     className="h-8"
                   >
                     Visit

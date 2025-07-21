@@ -1,6 +1,6 @@
 import axios from "axios";
 const apiUrl =
-  process.env.REACT_APP_API_URL || "https://todolist-web-eight.vercel.app/api";
+  import.meta.env.VITE_API_URL || "https://todolist-web-eight.vercel.app/api";
 
 // Create an axios instance
 const axiosInstance = axios.create({

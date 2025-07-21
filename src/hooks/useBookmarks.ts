@@ -1,4 +1,8 @@
-import { addBookmark, getBookmarks } from "@/api/bookmarkApi";
+import {
+  addBookmark,
+  getBookmarks,
+  type CreateBookmarkPayload,
+} from "@/api/bookmarkApi";
 import type { Bookmark } from "@/types/bookmark";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -10,11 +14,7 @@ export const useBookmarks = () => {
 export const useAddBookmark = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    Bookmark[],
-    Error,
-    { title: string; link: string; description: string }
-  >({
+  return useMutation<Bookmark[], Error, CreateBookmarkPayload>({
     mutationFn: addBookmark,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
