@@ -4,7 +4,6 @@ import * as z from "zod";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -13,7 +12,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getProfile, signup } from "../api/authApi";
+import { useAuth } from "../context/authContext";
 
 const signupSchema = z
   .object({
@@ -36,6 +37,9 @@ type SignupFormData = z.infer<typeof signupSchema>;
 export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -52,9 +56,11 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Signup successful:", data);
+      const { access_token } = await signup(data);
+      localStorage.setItem("token", access_token);
+      const profile = await getProfile();
+      setUser(profile.data);
+      navigate("/bookmarks");
       alert("Account created successfully!");
     } catch (error) {
       console.error("Signup failed:", error);
@@ -62,14 +68,6 @@ export default function Signup() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleBackToHome = () => {
-    console.log("Navigate back to home");
-  };
-
-  const handleLoginRedirect = () => {
-    console.log("Navigate to login");
   };
 
   return (
