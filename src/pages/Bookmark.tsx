@@ -49,7 +49,9 @@ import {
   Bell,
 } from "lucide-react";
 import { useAddBookmark, useBookmarks } from "../hooks/useBookmarks";
-// import type { Bookmark } from "../types/bookmark";
+import type { User as userType } from "../types/user";
+import type { Bookmark } from "../types/bookmark";
+import { useAuth } from "../context/authContext";
 
 const bookmarkSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -59,20 +61,13 @@ const bookmarkSchema = z.object({
 
 type BookmarkFormData = z.infer<typeof bookmarkSchema>;
 
-interface Bookmark extends BookmarkFormData {
-  id: string;
-  createdAt: Date;
-}
-
-interface UserType {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
+// interface Bookmark extends BookmarkFormData {
+//   id: string;
+//   createdAt: Date;
+// }
 
 export default function BookmarkPage() {
-  // const [user, setUser] = useState<UserType | null>(null);
+  const { user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
@@ -124,70 +119,77 @@ export default function BookmarkPage() {
     }
   };
 
-  // const handleEdit = (bookmark: Bookmark) => {
-  //   setEditingBookmark(bookmark);
-  //   form.reset({
-  //     title: bookmark.title,
-  //     url: bookmark.url,
-  //     description: bookmark.description || "",
-  //   });
-  // };
+  const handleEdit = (bookmark: Bookmark) => {
+    setEditingBookmark(bookmark);
+    form.reset({
+      title: bookmark.title,
+      url: bookmark.link,
+      description: bookmark.description || "",
+    });
+  };
 
-  // const handleDelete = async (id: string) => {
-  //   if (confirm("Are you sure you want to delete this bookmark?")) {
-  //     try {
-  //       await api.deleteBookmark(id);
-  //       setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== id));
-  //     } catch (error) {
-  //       console.error("Error deleting bookmark:", error);
-  //       alert("Failed to delete bookmark. Please try again.");
-  //     }
-  //   }
-  // };
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this bookmark?")) {
+      try {
+        console.log("deleting....");
+        // await api.deleteBookmark(id);
+        // setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== id));
+      } catch (error) {
+        console.error("Error deleting bookmark:", error);
+        alert("Failed to delete bookmark. Please try again.");
+      }
+    }
+  };
 
-  // const handleCancelEdit = () => {
-  //   setEditingBookmark(null);
-  //   form.reset();
-  // };
+  const handleCancelEdit = () => {
+    setEditingBookmark(null);
+    form.reset();
+  };
 
-  // const handleLogout = () => {
-  //   console.log("Logout clicked");
-  //   // Implement logout logic
-  // };
+  const handleLogout = () => {
+    console.log("Logout clicked");
+    // Implement logout logic
+  };
 
-  // const handleSettings = () => {
-  //   console.log("Settings clicked");
-  //   // Navigate to settings page
-  // };
+  const handleSettings = () => {
+    console.log("Settings clicked");
+    // Navigate to settings page
+  };
 
-  // const handleProfile = () => {
-  //   console.log("Profile clicked");
-  //   // Navigate to profile page
-  // };
+  const handleProfile = () => {
+    console.log("Profile clicked");
+    // Navigate to profile page
+  };
 
-  // const getDomainFromUrl = (url: string) => {
-  //   try {
-  //     return new URL(url).hostname;
-  //   } catch {
-  //     return url;
-  //   }
-  // };
+  const getDomainFromUrl = (url: string) => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  };
 
-  // const formatDate = (date: Date) => {
-  //   return new Intl.DateTimeFormat("en-US", {
-  //     month: "short",
-  //     day: "numeric",
-  //     year: "numeric",
-  //   }).format(date);
-  // };
+  const formatDate = (date: string | Date) => {
+    const parsedDate = typeof date === "string" ? new Date(date) : date;
 
-  // const getUserInitials = (name: string) => {
-  //   return name
-  //     .split(" ")
-  //     .map((n) => n[0])
-  //     .join("")
-  //     .toUpperCase();
-  // };
+    if (isNaN(parsedDate.getTime())) {
+      return "Invalid date";
+    }
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(parsedDate);
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   if (isBookmarksLoading) {
     return (
@@ -219,7 +221,7 @@ export default function BookmarkPage() {
             </p>
           </div>
 
-          {/* {user && (
+          {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -228,11 +230,11 @@ export default function BookmarkPage() {
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarImage
-                      src={user.avatar || "/placeholder.svg"}
-                      alt={user.name}
+                      src={"/placeholder.svg"}
+                      alt={user.firstName + user.lastName}
                     />
                     <AvatarFallback className="bg-gray-900 text-white">
-                      {getUserInitials(user.name)}
+                      {getUserInitials(user.firstName + user.lastName)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -241,7 +243,7 @@ export default function BookmarkPage() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user.name}
+                      {user.firstName + " " + user.lastName}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
@@ -262,13 +264,13 @@ export default function BookmarkPage() {
                   <span>Notifications</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )} */}
+          )}
         </div>
 
         {/* Search and Add Section */}
@@ -459,7 +461,7 @@ export default function BookmarkPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      // onClick={handleCancelEdit}
+                      onClick={handleCancelEdit}
                     >
                       Cancel
                     </Button>
@@ -485,7 +487,7 @@ export default function BookmarkPage() {
                     </CardTitle>
                     <CardDescription className="flex items-center gap-1 mt-1">
                       <span className="truncate">
-                        {/* {getDomainFromUrl(bookmark.url)} */}
+                        {getDomainFromUrl(bookmark.link)}
                       </span>
                       <ExternalLink className="h-3 w-3 flex-shrink-0" />
                     </CardDescription>
@@ -494,7 +496,7 @@ export default function BookmarkPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      // onClick={() => handleEdit(bookmark)}
+                      onClick={() => handleEdit(bookmark)}
                       className="h-8 w-8 p-0"
                     >
                       <Edit className="h-4 w-4" />
@@ -502,7 +504,7 @@ export default function BookmarkPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      // onClick={() => handleDelete(bookmark.id)}
+                      onClick={() => handleDelete(String(bookmark.id))}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -518,7 +520,7 @@ export default function BookmarkPage() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">
-                    {/* {formatDate(bookmark.createdAt)} */}
+                    {formatDate(bookmark.createdAt)}
                   </span>
                   <Button
                     size="sm"

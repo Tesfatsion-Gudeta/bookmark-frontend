@@ -3,4 +3,6 @@ export interface Bookmark {
   title: string;
   link: string;
   description: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

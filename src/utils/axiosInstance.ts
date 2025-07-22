@@ -1,6 +1,5 @@
 import axios from "axios";
-const apiUrl =
-  import.meta.env.VITE_API_URL || "https://todolist-web-eight.vercel.app/api";
+const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5003";
 
 // Create an axios instance
 const axiosInstance = axios.create({

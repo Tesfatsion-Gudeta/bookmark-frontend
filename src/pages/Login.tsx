@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,7 +28,13 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { user, setUser, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/bookmarks");
+    }
+  }, [user, loading, navigate]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -46,7 +52,7 @@ export default function Login() {
       localStorage.setItem("token", access_token); // Store token
 
       const profileRes = await getProfile();
-      setUser(profileRes.data); // Update context
+      setUser(profileRes); // Update context
       navigate("/bookmarks"); // Redirect after login
       alert("Login successful!");
     } catch (error) {

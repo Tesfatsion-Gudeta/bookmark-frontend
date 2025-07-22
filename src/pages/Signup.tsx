@@ -23,9 +23,6 @@ const signupSchema = z
     email: z.string().email("Please enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
-    terms: z
-      .boolean()
-      .refine((val) => val === true, "You must agree to the terms"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -48,7 +45,6 @@ export default function Signup() {
       email: "",
       password: "",
       confirmPassword: "",
-      terms: false,
     },
   });
 
@@ -59,7 +55,7 @@ export default function Signup() {
       const { access_token } = await signup(data);
       localStorage.setItem("token", access_token);
       const profile = await getProfile();
-      setUser(profile.data);
+      setUser(profile);
       navigate("/bookmarks");
       alert("Account created successfully!");
     } catch (error) {

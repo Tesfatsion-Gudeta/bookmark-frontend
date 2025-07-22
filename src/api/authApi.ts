@@ -16,17 +16,25 @@ export const signup = async (userData: createUserPayload) => {
   try {
     const { data } = await axiosInstance.post("/auth/signUp", userData);
     return data;
-  } catch (error) {}
+  } catch (error: any) {
+    throw error?.response?.data || error;
+  }
 };
 
 export const login = async (userData: loginUserPayload) => {
   try {
-    const { data } = await axiosInstance.post("/auth/login", userData);
+    const { data } = await axiosInstance.post("/auth/signin", userData);
     return data;
-  } catch (error) {}
+  } catch (error: any) {
+    throw error?.response?.data || error;
+  }
 };
 
 export const getProfile = async () => {
-  const { data } = await axiosInstance.get("/users/me");
-  return data;
+  try {
+    const { data } = await axiosInstance.get("/users/me");
+    return data;
+  } catch (error: any) {
+    throw error?.response?.data || error;
+  }
 };
