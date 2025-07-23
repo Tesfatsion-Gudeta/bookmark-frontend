@@ -48,14 +48,19 @@ import {
   LogOut,
   Bell,
 } from "lucide-react";
-import { useAddBookmark, useBookmarks } from "../hooks/useBookmarks";
+import {
+  useAddBookmark,
+  useBookmarks,
+  useDeleteBookmark,
+  useUpdateBookmark,
+} from "../hooks/useBookmarks";
 import type { User as userType } from "../types/user";
 import type { Bookmark } from "../types/bookmark";
 import { useAuth } from "../context/authContext";
 
 const bookmarkSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  url: z.string().url("Please enter a valid URL"),
+  link: z.string().url("Please enter a valid URL"),
   description: z.string().optional(),
 });
 
@@ -75,12 +80,14 @@ export default function BookmarkPage() {
 
   const { data: bookmarks, isLoading: isBookmarksLoading } = useBookmarks();
   const { mutate: addBookmarkMutation } = useAddBookmark();
+  const { mutate: updateBookmarkMutation } = useUpdateBookmark();
+  const { mutate: deleteBookmarkMutation } = useDeleteBookmark();
 
   const form = useForm<BookmarkFormData>({
     resolver: zodResolver(bookmarkSchema),
     defaultValues: {
       title: "",
-      url: "",
+      link: "",
       description: "",
     },
   });
@@ -98,12 +105,22 @@ export default function BookmarkPage() {
     try {
       if (editingBookmark) {
         // Update existing bookmark
+
+        await updateBookmarkMutation({
+          id: String(editingBookmark.id),
+          data: {
+            title: data.title,
+            link: data.link,
+            description: data.description,
+          },
+        });
+        setEditingBookmark(null);
       } else {
         // Add new bookmark
 
         await addBookmarkMutation({
           title: data.title,
-          link: data.url,
+          link: data.link,
           description: data.description,
         });
 
@@ -123,7 +140,7 @@ export default function BookmarkPage() {
     setEditingBookmark(bookmark);
     form.reset({
       title: bookmark.title,
-      url: bookmark.link,
+      link: bookmark.link,
       description: bookmark.description || "",
     });
   };
@@ -131,9 +148,7 @@ export default function BookmarkPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this bookmark?")) {
       try {
-        console.log("deleting....");
-        // await api.deleteBookmark(id);
-        // setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== id));
+        await deleteBookmarkMutation(id);
       } catch (error) {
         console.error("Error deleting bookmark:", error);
         alert("Failed to delete bookmark. Please try again.");
@@ -144,11 +159,6 @@ export default function BookmarkPage() {
   const handleCancelEdit = () => {
     setEditingBookmark(null);
     form.reset();
-  };
-
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    // Implement logout logic
   };
 
   const handleSettings = () => {
@@ -320,7 +330,7 @@ export default function BookmarkPage() {
 
                   <FormField
                     control={form.control}
-                    name="url"
+                    name="link"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>URL</FormLabel>
@@ -392,7 +402,7 @@ export default function BookmarkPage() {
             <CardContent>
               <Form {...form}>
                 <form
-                  // onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -412,7 +422,7 @@ export default function BookmarkPage() {
 
                     <FormField
                       control={form.control}
-                      name="url"
+                      name="link"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>URL</FormLabel>
