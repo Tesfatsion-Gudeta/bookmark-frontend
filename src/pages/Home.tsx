@@ -2,10 +2,13 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
-    <section className="relative w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gray-50">
+    <section className="relative w-full min-h-screen py-12 md:py-24 lg:py-32 xl:py-48 bg-gray-50 flex items-center justify-center">
+      {/* Grid background */}
       <div className="absolute inset-0 opacity-50">
         <div className="h-full w-full bg-[linear-gradient(to_right,#80808025_1px,transparent_1px),linear-gradient(to_bottom,#80808025_1px,transparent_1px)] bg-[size:24px_24px]"></div>
       </div>
+
+      {/* Content */}
       <div className="container px-4 md:px-6 relative z-10 mx-auto">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="space-y-2">
