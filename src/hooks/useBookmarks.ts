@@ -44,7 +44,7 @@ export const useAddBookmark = () => {
 
       return { previousBookmarks };
     },
-    onError: (error, newBookmark, context) => {
+    onError: (error, _newBookmark, context) => {
       if (context?.previousBookmarks) {
         queryClient.setQueryData(["bookmarks"], context.previousBookmarks);
       }
@@ -94,7 +94,7 @@ export const useDeleteBookmark = () => {
 
       return { previousBookmarks };
     },
-    onError: (error, id, context) => {
+    onError: (error, _id, context) => {
       if (context?.previousBookmarks) {
         queryClient.setQueryData(["bookmarks"], context.previousBookmarks);
       }
