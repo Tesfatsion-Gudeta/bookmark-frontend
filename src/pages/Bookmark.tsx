@@ -227,10 +227,7 @@ export default function BookmarkPage() {
                   className="relative h-10 w-10 rounded-full"
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={"/placeholder.svg"}
-                      alt={user.firstName + user.lastName}
-                    />
+                    <AvatarImage alt={user.firstName + user.lastName} />
                     <AvatarFallback className="bg-gray-900 text-white">
                       {getUserInitials(user.firstName + user.lastName)}
                     </AvatarFallback>

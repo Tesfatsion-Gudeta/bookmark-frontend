@@ -110,10 +110,7 @@ export default function ProfilePage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage
-                  src="/placeholder.svg"
-                  alt={`${user.firstName} ${user.lastName}`}
-                />
+                <AvatarImage alt={`${user.firstName} ${user.lastName}`} />
                 <AvatarFallback className="bg-gray-900 text-white text-xl">
                   {getUserInitials(user.firstName || "", user.lastName || "")}
                 </AvatarFallback>
