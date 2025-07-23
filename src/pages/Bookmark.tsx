@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,9 +44,7 @@ import {
   ExternalLink,
   Search,
   User,
-  Settings,
   LogOut,
-  Bell,
 } from "lucide-react";
 import {
   useAddBookmark,
@@ -54,9 +52,10 @@ import {
   useDeleteBookmark,
   useUpdateBookmark,
 } from "../hooks/useBookmarks";
-import type { User as userType } from "../types/user";
 import type { Bookmark } from "../types/bookmark";
 import { useAuth } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const bookmarkSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -66,22 +65,22 @@ const bookmarkSchema = z.object({
 
 type BookmarkFormData = z.infer<typeof bookmarkSchema>;
 
-// interface Bookmark extends BookmarkFormData {
-//   id: string;
-//   createdAt: Date;
-// }
-
 export default function BookmarkPage() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
   const { data: bookmarks, isLoading: isBookmarksLoading } = useBookmarks();
   const { mutate: addBookmarkMutation } = useAddBookmark();
   const { mutate: updateBookmarkMutation } = useUpdateBookmark();
   const { mutate: deleteBookmarkMutation } = useDeleteBookmark();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [bookmarkToDelete, setBookmarkToDelete] = useState<Bookmark | null>(
+    null
+  );
 
   const form = useForm<BookmarkFormData>({
     resolver: zodResolver(bookmarkSchema),
@@ -101,11 +100,9 @@ export default function BookmarkPage() {
 
   const onSubmit = async (data: BookmarkFormData) => {
     setIsLoading(true);
-
     try {
       if (editingBookmark) {
         // Update existing bookmark
-
         await updateBookmarkMutation({
           id: String(editingBookmark.id),
           data: {
@@ -117,20 +114,17 @@ export default function BookmarkPage() {
         setEditingBookmark(null);
       } else {
         // Add new bookmark
-
         await addBookmarkMutation({
           title: data.title,
           link: data.link,
           description: data.description,
         });
-
         setIsAddDialogOpen(false);
       }
-
       form.reset();
     } catch (error) {
       console.error("Error saving bookmark:", error);
-      alert("Failed to save bookmark. Please try again.");
+      toast.error("Failed to save bookmark. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -145,14 +139,17 @@ export default function BookmarkPage() {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this bookmark?")) {
-      try {
-        await deleteBookmarkMutation(id);
-      } catch (error) {
-        console.error("Error deleting bookmark:", error);
-        alert("Failed to delete bookmark. Please try again.");
-      }
+  const handleDeleteConfirm = async () => {
+    if (!bookmarkToDelete) return;
+    try {
+      await deleteBookmarkMutation(String(bookmarkToDelete.id));
+      toast.success("Bookmark deleted");
+    } catch (error) {
+      console.error("Error deleting bookmark:", error);
+      toast.error("Failed to delete bookmark. Please try again.");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setBookmarkToDelete(null);
     }
   };
 
@@ -161,14 +158,8 @@ export default function BookmarkPage() {
     form.reset();
   };
 
-  const handleSettings = () => {
-    console.log("Settings clicked");
-    // Navigate to settings page
-  };
-
   const handleProfile = () => {
-    console.log("Profile clicked");
-    // Navigate to profile page
+    navigate("/profile");
   };
 
   const getDomainFromUrl = (url: string) => {
@@ -181,11 +172,9 @@ export default function BookmarkPage() {
 
   const formatDate = (date: string | Date) => {
     const parsedDate = typeof date === "string" ? new Date(date) : date;
-
     if (isNaN(parsedDate.getTime())) {
       return "Invalid date";
     }
-
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
       day: "numeric",
@@ -230,7 +219,6 @@ export default function BookmarkPage() {
               Organize and manage your saved websites
             </p>
           </div>
-
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -265,14 +253,6 @@ export default function BookmarkPage() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSettings}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell className="mr-2 h-4 w-4" />
-                  <span>Notifications</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -294,7 +274,6 @@ export default function BookmarkPage() {
               className="pl-10"
             />
           </div>
-
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
@@ -327,7 +306,6 @@ export default function BookmarkPage() {
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="link"
@@ -341,7 +319,6 @@ export default function BookmarkPage() {
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="description"
@@ -360,7 +337,6 @@ export default function BookmarkPage() {
                       </FormItem>
                     )}
                   />
-
                   <div className="flex gap-2 pt-4">
                     <Button
                       type="submit"
@@ -419,7 +395,6 @@ export default function BookmarkPage() {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="link"
@@ -437,7 +412,6 @@ export default function BookmarkPage() {
                       )}
                     />
                   </div>
-
                   <FormField
                     control={form.control}
                     name="description"
@@ -456,7 +430,6 @@ export default function BookmarkPage() {
                       </FormItem>
                     )}
                   />
-
                   <div className="flex gap-2">
                     <Button type="submit" disabled={isLoading}>
                       {isLoading ? (
@@ -514,7 +487,10 @@ export default function BookmarkPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(String(bookmark.id))}
+                      onClick={() => {
+                        setBookmarkToDelete(bookmark);
+                        setIsDeleteDialogOpen(true);
+                      }}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -568,6 +544,37 @@ export default function BookmarkPage() {
           </div>
         )}
       </div>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Bookmark</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>{bookmarkToDelete?.title}</strong>?
+              <br />
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setBookmarkToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={!bookmarkToDelete}
+            >
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

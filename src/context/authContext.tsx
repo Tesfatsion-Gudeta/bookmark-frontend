@@ -6,13 +6,18 @@ import React, {
   type ReactNode,
 } from "react";
 import type { User } from "../types/user";
-import { getProfile } from "../api/authApi";
+import {
+  getProfile,
+  updateUser as updateUserApi,
+  type UpdateUserDto,
+} from "../api/authApi";
 
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean;
   logout: () => void;
+  updateUser: (userData: UpdateUserDto) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,7 +40,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       try {
         const data = await getProfile();
-
         // Prevent unnecessary state update and rerender
         setUser((prevUser) => {
           if (!prevUser || prevUser.id !== data.id) {
@@ -59,8 +63,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(null);
   };
 
+  const updateUser = async (userData: UpdateUserDto): Promise<User> => {
+    try {
+      const updatedUser = await updateUserApi(userData);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser, loading, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

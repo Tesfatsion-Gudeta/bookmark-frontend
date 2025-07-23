@@ -15,6 +15,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { getProfile, signup } from "../api/authApi";
 import { useAuth } from "../context/authContext";
+import { toast } from "sonner";
 
 const signupSchema = z
   .object({
@@ -57,10 +58,10 @@ export default function Signup() {
       const profile = await getProfile();
       setUser(profile);
       navigate("/bookmarks");
-      alert("Account created successfully!");
+      toast.success("Account created successfully!");
     } catch (error) {
       console.error("Signup failed:", error);
-      alert("Signup failed. Please try again.");
+      toast.error("Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

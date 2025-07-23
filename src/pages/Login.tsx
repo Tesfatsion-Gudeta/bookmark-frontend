@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -54,9 +55,9 @@ export default function Login() {
       const profileRes = await getProfile();
       setUser(profileRes); // Update context
       navigate("/bookmarks"); // Redirect after login
-      alert("Login successful!");
+      toast.success("Login successful!");
     } catch (error) {
-      alert("Login failed. Please check your credentials.");
+      toast.error("Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }

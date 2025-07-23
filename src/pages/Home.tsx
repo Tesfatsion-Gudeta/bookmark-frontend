@@ -1,17 +1,6 @@
 import { Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
 
 export default function Home() {
-  const handleSignUp = () => {
-    // Handle signup logic
-    console.log("Sign up clicked");
-  };
-
-  const handleLogin = () => {
-    // Handle login logic
-    console.log("Login clicked");
-  };
-
   return (
     <section className="relative w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gray-50">
       <div className="absolute inset-0 opacity-50">
@@ -35,7 +24,7 @@ export default function Home() {
           <div className="flex flex-col gap-2 min-[400px]:flex-row">
             <Link to="/signup">
               <button className="inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-white shadow transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-900 disabled:pointer-events-none disabled:opacity-50">
-                Sign Up Free
+                Sign Up
               </button>
             </Link>
 
