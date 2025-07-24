@@ -27,6 +27,28 @@ A responsive and modern web app to manage your bookmarks. Built using **React**,
 
 ---
 
+## 📁 Folder Structure
+
+```bash
+src/
+├── api/           # Axios API methods
+├── assets/        # Static assets like images
+├── auth/          # Auth context and hooks
+├── components/    # Reusable components
+│   └── ui/        # ShadCN components
+├── context/       # App-level context (AuthProvider, etc.)
+├── hooks/         # Custom hooks
+├── lib/           # Utilities and helpers
+├── pages/         # Route pages (home, login, signup, profile, etc.)
+├── routes/        # Route definitions
+├── types/         # TypeScript types
+├── utils/         # General utilities
+├── App.tsx        # Root app layout
+├── main.tsx       # Entry point
+└── vite-env.d.ts  # Vite typings
+```
+---
+
 ## 🚀 Getting Started
 
 1. **Clone the repository**
