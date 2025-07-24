@@ -11,6 +11,7 @@ A responsive and modern web app to manage your bookmarks. Built using **React**,
 - 🔍 Organized and searchable bookmark list
 - 💅 Beautiful UI with ShadCN + Tailwind CSS
 - 🔐 Authentication support (Sign up / Log in)
+- 👤 **User profile management** (update name, email)
 - 📱 Fully responsive on all devices
 
 ---
